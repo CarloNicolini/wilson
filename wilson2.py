@@ -22,6 +22,7 @@ class Wilson:
         
         # set edge attribute weight with weight 1
         self.H.add_weighted_edges_from([(u,v,1.0) for u,v in G.edges()])
+        self.H.add_weighted_edges_from([(v,u,1.0) for u,v in G.edges()])
         
         # add the magic link from all nodes to n+1 with weight 1/q
         #self.H.add_weighted_edges_from([(self.nv,n, q) for n in G.nodes()])
