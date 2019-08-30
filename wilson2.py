@@ -6,7 +6,7 @@ Wilson's algorithm for unweighted STs.
 import numpy as np
 import networkx as nx
 import sys
-sys.path.append('/home/carlo2/workspace/networkqit')
+sys.path.append('/home/carlo/workspace/networkqit')
 import matplotlib.pyplot as plt
 import networkqit as nq
 import random
@@ -25,9 +25,8 @@ class Wilson:
         self.H.add_weighted_edges_from([(v,u,1.0) for u,v in G.edges()])
         
         # add the magic link from all nodes to n+1 with weight 1/q
-        #self.H.add_weighted_edges_from([(self.nv,n, q) for n in G.nodes()])
+        self.H.add_weighted_edges_from([(n,self.nv, q) for n in G.nodes()])
         self.H.add_weighted_edges_from([(self.nv,n, q) for n in G.nodes()])
-        #print(np.asarray([(u,v,w['weight']) for u,v,w in self.H.edges(data=True)]).reshape([60,3]))
 
     # Choose an edge from v's adjacency list (randomly)
     def random_successor(self, v):
@@ -83,7 +82,7 @@ class Wilson:
         lambdai = np.linalg.eigvalsh(L)
         return (self.q/(self.q + lambdai)).sum()
 
-def to_networkx(G, T, root_nodes=None):
+def draw_sampling(G, T, root_nodes=None):
     T = nx.Graph(T)
     n_trees = nx.number_connected_components(T)
     pos = nx.kamada_kawai_layout(G)
@@ -100,29 +99,30 @@ def to_networkx(G, T, root_nodes=None):
         nx.draw_networkx_edges(t, pos, width=2, edge_cmap=plt.cm.Set2, edge_color=[cmap(float(i)/n_trees)]*e )
     plt.axis('off')
 
-if __name__=='__main__':
+def trace_estimator():
     reps = 10
-    G = nx.grid_2d_graph(5, 5, periodic=False)
+    #G = nx.grid_2d_graph(5, 5, periodic=False)
     #G = nx.path_graph(100)
-    G = nx.from_numpy_array(nx.to_numpy_array(G))
-    #G = nx.planted_partition_graph(4,20,1,0.01)
-    beta_range = np.logspace(-2, 2, 20)
-
+    #G = nx.from_numpy_array(nx.to_numpy_array(G))
+    G = nx.planted_partition_graph(4,20,1,0.01)
+    beta_range = np.logspace(-2, 2, 50)
     L = nx.laplacian_matrix(G).toarray()
-
     plt.semilogx(beta_range, [np.mean([len(Wilson(G,beta).sample()[1]) for _ in range(reps)]) for beta in beta_range], label='E[|R|]')
     plt.semilogx(beta_range, [Wilson(G,q=beta).s() for beta in beta_range], label='q Tr[(qI+L)^{-1}]' )
     plt.legend()
     plt.grid(which='both')
     plt.show()
-    
-    # q = 10
-    # for _ in range(1):
-    #     W = Wilson(G, q=q)
-    #     F,roots = W.sample()
-    #     print(W.s(), np.mean([len(Wilson(G, q=1/q).sample()[1]) for _ in range(reps)]) )
 
-    #     to_networkx(G, F, roots)
-    #     #plt.savefig('wilson_ring_of_cliques_5_10_beta_1E9.png')
-    #     #print([x for x in F.nodes() if F.degree(x)==1])
-    #     plt.show()
+def sampling_example():
+    G = nx.grid_2d_graph(5, 5, periodic=False)
+    G = nx.from_numpy_array(nx.to_numpy_array(G))
+    q = 0.1    
+    W = Wilson(G, q=q)
+    F,roots = W.sample()
+    draw_sampling(G, F, roots)
+    plt.show()
+
+if __name__=='__main__':
+    trace_estimator()
+    sampling_example()
+    
