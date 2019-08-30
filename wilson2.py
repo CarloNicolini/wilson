@@ -50,6 +50,7 @@ class Wilson:
 
         from random import shuffle
         l = [root] + list(range(self.nv))
+        shuffle(l) # not necessary but nice, since the results do not depend on the order
         for i in l:
             u = i
             while not intree[u]:
