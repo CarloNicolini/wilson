@@ -84,21 +84,24 @@ class Wilson:
         lambdai = np.linalg.eigvalsh(self.L)
         return (self.q/(self.q + lambdai)).sum()
 
-def draw_sampling(G, T, root_nodes=None):
-    T = nx.Graph(T)
-    n_trees = nx.number_connected_components(T)
-    pos = nx.kamada_kawai_layout(G)
+def draw_sampling(G, T, root_nodes=None, **kwargs):
+    ax = kwargs.get('ax',None)
+    cmap = kwargs.get('cmap', matplotlib.cm.get_cmap('Set3'))
+    T = nx.DiGraph(T)
+    n_trees = nx.number_weakly_connected_components(T)
+    pos = nx.spectral_layout(G)
     if root_nodes is not None:
-        nx.draw_networkx_nodes(G, pos=pos, nodelist=root_nodes, node_color='r',node_size=25,linew_width=1)
+        nx.draw_networkx_nodes(G, pos=pos, nodelist=root_nodes, node_color='r',node_size=25,linew_width=1,ax=ax)
         #nx.draw_networkx_labels(G, pos=pos, labels={i: i for i in range(G.number_of_nodes())})
-    nx.draw_networkx_nodes(G, pos=pos, node_color='k', node_size=3, lines_width=0.1)
-    nx.draw_networkx_edges(G, pos, edge_style='dashed', alpha=0.1, edge_color='k', edge_width=0.01)
+    nx.draw_networkx_nodes(G, pos=pos, node_color='k', node_size=3, lines_width=0.1,ax=ax)
+    nx.draw_networkx_edges(G, pos, edge_style='dashed', alpha=0.1, edge_color='k', edge_width=0.01, ax=ax)
 
-    cmap = matplotlib.cm.get_cmap('Set3')
-    for i, t in enumerate(nx.connected_component_subgraphs(T)):
+    
+    for i, t in enumerate(nx.weakly_connected_component_subgraphs(T)):
         e = nx.number_of_edges(t)
         #print('|V|=%d |E|=%d' % (t.number_of_nodes(),t.number_of_edges()))
-        nx.draw_networkx_edges(t, pos, width=2, edge_cmap=plt.cm.Set2, edge_color=[cmap(float(i)/n_trees)]*e )
+        nx.draw_networkx_edges(t, pos, width=4, edge_cmap=cmap, edge_color=[cmap(float(i)/n_trees)]*e ,ax=ax, arrows=True)
+        #nx.draw_networkx_edges(t, pos, width=1, edge_color='k', arrows=True,ax=ax)
     plt.axis('off')
 
 def trace_estimator(G):
