@@ -89,7 +89,8 @@ def draw_sampling(G, T, root_nodes=None, **kwargs):
     cmap = kwargs.get('cmap', matplotlib.cm.get_cmap('Set3'))
     T = nx.DiGraph(T)
     n_trees = nx.number_weakly_connected_components(T)
-    pos = nx.spectral_layout(G)
+    pos = kwargs.get('pos', nx.spectral_layout(G))
+    
     if root_nodes is not None:
         nx.draw_networkx_nodes(G, pos=pos, nodelist=root_nodes, node_color='r',node_size=25,linew_width=1,ax=ax)
         #nx.draw_networkx_labels(G, pos=pos, labels={i: i for i in range(G.number_of_nodes())})
@@ -114,17 +115,26 @@ def trace_estimator(G):
     plt.grid(which='both')
     plt.show()
 
-def sampling_example(G):
+def sampling_example(G,pos=None):
     q = 0.1    
     W = Wilson(G, q=q)
     F,roots = W.sample()
-    draw_sampling(G, F, roots)
+    draw_sampling(G, F, roots, pos=pos)
     plt.show()
+
+def quad(x,y):
+    pos = {}
+    k = 0
+    for i in range(x):
+        for j in range(y):
+            pos[k] = np.array([i,j])
+            k = k+1
+    return pos
 
 if __name__=='__main__':
     G = nx.grid_2d_graph(15, 15, periodic=False)
     G = nx.from_numpy_array(nx.to_numpy_array(G))
-
-    trace_estimator(G)
+    pos = quad(15,15)
+    #trace_estimator(G)
     sampling_example(G)
     
